@@ -25,11 +25,24 @@ if (navigator.geolocation)
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
+      L.marker(coords).addTo(map).bindPopup('Current position').openPopup();
+      map.on('click', function (e) {
+        const { lat, lng } = e.latlng;
 
-      L.marker(coords)
-        .addTo(map)
-        .bindPopup('A pretty CSS popup.<br> Easily customizable.')
-        .openPopup();
+        L.marker([lat, lng])
+          .addTo(map)
+          .bindPopup(
+            L.popup({
+              maxWidth: 250,
+              minWidth: 100,
+              autoClose: false,
+              closeOnClick: false,
+              className: 'running-popup',
+            })
+          )
+          .setPopupContent('Workout')
+          .openPopup();
+      });
     },
     function () {
       alert('Nie możemy określić twojej pozycji!');
