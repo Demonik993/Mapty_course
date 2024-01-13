@@ -12,11 +12,47 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
-//API geolocation
+class Workout {
+  date = new Date();
+  id = (new Date().getTime() + '').slice(-10);
+  constructor(distance, coords, duration) {
+    this.distance = distance; //km
+    this.coords = coords;
+    this.duration = duration; //min
+  }
+}
+
+class Running extends Workout {
+  constructor(distance, coords, duration, cadence) {
+    super(distance, coords, duration);
+    this.cadence = cadence;
+    this.calcPace();
+  }
+  calcPace() {
+    this.pace = this.duration / this.distance;
+    return this.pace;
+  }
+}
+class Cycling extends Workout {
+  constructor(distance, coords, duration, elevationGain) {
+    super(distance, coords, duration);
+    this.elevationGain = elevationGain;
+    this.calcSpeed();
+  }
+  calcSpeed() {
+    this.speed = this.distance / (this.time / 60);
+    return this.speed;
+  }
+}
+// const run1 = new Running(10, [35, 64], 25, 160);
+// const cycl1 = new Cycling(40, [24, 84], 180, 2000);
+// console.log(run1, cycl1);
+
 class App {
   #map;
   #mapEvent;
   constructor() {
+    //API geolocation
     this._getPosition();
     form.addEventListener('submit', this._newWorkout.bind(this)); //add bind(this) to use class vars
     inputType.addEventListener('change', this._toogleElevationField);
