@@ -72,6 +72,7 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this)); //add bind(this) to use class vars
     inputType.addEventListener('change', this._toogleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    containerWorkouts.addEventListener('click', this._deletWorkout.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation)
@@ -218,7 +219,7 @@ class App {
       <span class="workout__value">${workout.cadence}</span>
       <span class="workout__unit">spm</span>
     </div>
-    </li> 
+ 
   `;
     }
     if (workout.type === 'cycling') {
@@ -233,16 +234,26 @@ class App {
       <span class="workout__value">${workout.elevationGain}</span>
       <span class="workout__unit">m</span>
     </div>
-    </li> 
+  
       `;
     }
-
+    html += `<div class="btn--func">
+    <button class="btn--show-view" title="Show on the map">👀</button>
+    <button class="btn--delete-workout" title="Delete workout">❌</button>
+    <button class="btn--edit-workout">⚙</button>
+    
+    </div>
+    </li> `;
     form.insertAdjacentHTML('afterend', html);
   }
   _moveToPopup(e) {
-    const workoutEl = e.target.closest('.workout');
+    const workoutEl = e.target.closest('.btn--show-view');
+    console.log(workoutEl);
+
     if (!workoutEl) return;
-    const workout = this.#workouts.find(w => w.id === workoutEl.dataset.id);
+    const workout = this.#workouts.find(
+      w => w.id === workoutEl.closest('.workout').dataset.id
+    );
 
     this.#map.setView(workout.coords, 15, {
       animate: true,
@@ -266,6 +277,22 @@ class App {
   reset() {
     localStorage.removeItem('workouts');
     location.reload(); // to reload the page from console
+  }
+  _deletWorkout(e) {
+    const workoutEl = e.target.closest('.btn--delete-workout');
+    if (!workoutEl) return;
+    const confirmDelete = confirm('Do you really want to remove this workout');
+    if (!confirmDelete) return;
+    const workout = this.#workouts.find(
+      w => w.id === workoutEl.closest('.workout').dataset.id
+    );
+    this.#map.removeLayer(L.marker(workout.coords).addTo(this.#map));
+    this.#workouts = this.#workouts.filter(
+      w => w.id !== workoutEl.closest('.workout').dataset.id
+    );
+    this._setLocalStorage();
+    workoutEl.closest('.workout').remove();
+    location.reload();
   }
 }
 const app = new App();
