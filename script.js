@@ -67,6 +67,7 @@ class App {
     this._getPosition();
     form.addEventListener('submit', this._newWorkout.bind(this)); //add bind(this) to use class vars
     inputType.addEventListener('change', this._toogleElevationField);
+    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation)
@@ -230,6 +231,16 @@ class App {
     }
 
     form.insertAdjacentHTML('afterend', html);
+  }
+  _moveToPopup(e) {
+    const workoutEl = e.target.closest('.workout');
+    if (!workoutEl) return;
+    const workout = this.#workouts.find(w => w.id === workoutEl.dataset.id);
+
+    this.#map.setView(workout.coords, 15, {
+      animate: true,
+      pan: { duration: 1 },
+    });
   }
 }
 const app = new App();
