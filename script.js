@@ -24,7 +24,6 @@ class Workout {
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
-    console.log(this.description);
   }
 }
 
@@ -63,8 +62,13 @@ class App {
   #mapEvent;
   #workouts = [];
   constructor() {
-    //API geolocation
+    //API geolocation // get Position
     this._getPosition();
+
+    //get locale storage
+    this._getLocalStorage();
+
+    //add event handlers
     form.addEventListener('submit', this._newWorkout.bind(this)); //add bind(this) to use class vars
     inputType.addEventListener('change', this._toogleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
@@ -81,7 +85,6 @@ class App {
   _loadMap(position) {
     const { latitude } = position.coords;
     const { longitude } = position.coords;
-    console.log(latitude, longitude);
     const coords = [latitude, longitude];
 
     this.#map = L.map('map').setView(coords, 15);
@@ -92,6 +95,10 @@ class App {
     }).addTo(this.#map);
     L.marker(coords).addTo(this.#map).bindPopup('Current position').openPopup();
     this.#map.on('click', this._showForm.bind(this));
+    //render positions
+    this.#workouts.forEach(w => {
+      this._renderWorkoutMarker(w);
+    });
   }
 
   _showForm(e) {
@@ -151,7 +158,6 @@ class App {
     }
     //add workout to workouts array
     this.#workouts.push(workout);
-    console.log(this.#workouts);
 
     //render workout on map
     this._renderWorkoutMarker(workout);
@@ -161,6 +167,9 @@ class App {
 
     //clear all fields and hide form
     this._hideForm();
+
+    //set the localStorage
+    this._setLocalStorage();
   }
   _renderWorkoutMarker(workout) {
     L.marker(workout.coords)
@@ -180,11 +189,9 @@ class App {
       .openPopup();
   }
   _renderWorkout(workout) {
-    console.log(workout.description);
-
     let html = `
     <li class="workout workout--${workout.type}" data-id="${workout.id}">
-      <h2 class="workout__title">${workout.description} on April 14</h2>
+      <h2 class="workout__title">${workout.description}</h2>
       <div class="workout__details">
         <span class="workout__icon">${
           workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'
@@ -241,6 +248,24 @@ class App {
       animate: true,
       pan: { duration: 1 },
     });
+  }
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts)); // good only for small amounts of data
+  }
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+    console.log(data);
+    if (!data) return;
+
+    this.#workouts = data;
+    this.#workouts.forEach(w => {
+      this._renderWorkout(w);
+      // this._renderWorkoutMarker(w);
+    });
+  }
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload(); // to reload the page from console
   }
 }
 const app = new App();
