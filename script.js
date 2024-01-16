@@ -73,6 +73,7 @@ class App {
     inputType.addEventListener('change', this._toogleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     containerWorkouts.addEventListener('click', this._deletWorkout.bind(this));
+    containerWorkouts.addEventListener('click', this._editWorkout.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation)
@@ -126,7 +127,7 @@ class App {
   _newWorkout(e) {
     e.preventDefault();
     const isValid = (...values) => values.every(val => Number.isFinite(val));
-    const allPositive = (...values) => values.every(val => val >= 0);
+    const allPositive = (...values) => values.every(val => val > 0);
 
     const { lat, lng } = this.#mapEvent.latlng;
     let workout;
@@ -240,7 +241,7 @@ class App {
     html += `<div class="btn--func">
     <button class="btn--show-view" title="Show on the map">👀</button>
     <button class="btn--delete-workout" title="Delete workout">❌</button>
-    <button class="btn--edit-workout">⚙</button>
+    <button class="btn--edit-workout" title="Edit workout">⚙</button>
     
     </div>
     </li> `;
@@ -293,6 +294,141 @@ class App {
     this._setLocalStorage();
     workoutEl.closest('.workout').remove();
     location.reload();
+  }
+  _editWorkout(e) {
+    const workoutEl = e.target.closest('.btn--edit-workout');
+    if (!workoutEl) return;
+    const workoutHtml = workoutEl.closest('.workout');
+    console.log(workoutHtml);
+
+    const workout = this.#workouts.find(w => w.id === workoutHtml.dataset.id);
+    console.log(workout);
+    let html = `<form class="form edit-form">
+    <div class="form__row">
+      <label class="form__label">Type</label>
+      <select class="form__input form__input--type">
+        <option value="running" ${
+          workout.type === 'running' ? 'selected' : ''
+        }>Running</option>
+        <option value="cycling"  ${
+          workout.type === 'cycling' ? 'selected' : ''
+        }>Cycling</option>
+      </select>
+    </div>
+    <div class="form__row">
+      <label class="form__label">Distance</label>
+      <input class="form__input form__input--distance" placeholder="km" value="${
+        workout.distance
+      }"/>
+    </div>
+    <div class="form__row">
+      <label class="form__label">Duration</label>
+      <input
+        class="form__input form__input--duration "
+        placeholder="min" value="${workout.duration}"
+      />
+    </div>
+    `;
+    html += `
+    <div class="form__row ${
+      workout.type === 'running' ? '' : 'form__row--hidden'
+    }">
+      <label class="form__label">Cadence</label>
+      <input
+        class="form__input form__input--cadence"
+        placeholder="step/min" value="${
+          workout.type === 'running' ? workout.cadence : workout.elevationGain
+        }"
+      />
+    </div>
+    <div class="form__row ${
+      workout.type === 'cycling' ? '' : 'form__row--hidden'
+    }">
+      <label class="form__label">Elev Gain</label>
+      <input
+        class="form__input form__input--elevation"
+        placeholder="meters" value="${
+          workout.type === 'running' ? workout.cadence : workout.elevationGain
+        }"
+      />
+    </div>
+    <button class="form__btn">OK</button>
+    </form>
+    `;
+    workoutHtml.outerHTML = html;
+    const editFormEl = document.querySelector('.edit-form');
+    const selectEditType = editFormEl.querySelector('.form__input--type');
+    console.log(selectEditType);
+
+    selectEditType.addEventListener('change', () => {
+      editFormEl
+        .querySelector('.form__input--cadence')
+        .closest('.form__row')
+        .classList.toggle('form__row--hidden');
+      editFormEl
+        .querySelector('.form__input--elevation')
+        .closest('.form__row')
+        .classList.toggle('form__row--hidden');
+    });
+    editFormEl.addEventListener('submit', e => {
+      e.preventDefault();
+      const isValid = (...values) => values.every(val => Number.isFinite(val));
+      const allPositive = (...values) => values.every(val => val > 0);
+      console.log(workout);
+      const typeEdited = editFormEl.querySelector('.form__input--type').value;
+      const distanceEdited = +editFormEl.querySelector('.form__input--distance')
+        .value;
+      const durationEdited = +editFormEl.querySelector('.form__input--duration')
+        .value;
+      const cadenceEdited = +editFormEl.querySelector('.form__input--cadence')
+        .value;
+      const elevationEdited = +editFormEl.querySelector(
+        '.form__input--elevation'
+      ).value;
+
+      if (typeEdited === 'running') {
+        if (
+          !isValid(distanceEdited, durationEdited, cadenceEdited) ||
+          !allPositive(distanceEdited, durationEdited, cadenceEdited)
+        )
+          return alert('Enter the positive number!');
+        //if workout is running change running obj.
+        const editWorkout = new Running(
+          distanceEdited,
+          workout.coords,
+          durationEdited,
+          cadenceEdited
+        );
+
+        editWorkout.date = workout.date;
+        editWorkout.id = workout.id;
+        const workoudIndex = this.#workouts.indexOf(workout);
+        this.#workouts[workoudIndex] = editWorkout;
+      }
+
+      // if workout is cycling create cycling object
+      if (typeEdited === 'cycling') {
+        if (
+          !isValid(distanceEdited, durationEdited, elevationEdited) ||
+          !allPositive(distanceEdited, durationEdited)
+        )
+          return alert('Enter the positive number!');
+        const editWorkout = new Cycling(
+          distanceEdited,
+          workout.coords,
+          durationEdited,
+          elevationEdited
+        );
+        editWorkout.date = workout.date;
+        editWorkout.id = workout.id;
+        const workoudIndex = this.#workouts.indexOf(workout);
+        this.#workouts[workoudIndex] = editWorkout;
+      }
+      workoutHtml.remove();
+      this._setLocalStorage();
+      this._getLocalStorage();
+      location.reload();
+    });
   }
 }
 const app = new App();
