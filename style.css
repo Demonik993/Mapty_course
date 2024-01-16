@@ -167,7 +167,13 @@ a:visited {
 }
 
 .form__btn {
-  display: none;
+  display: flex;
+  justify-content: space-around;
+  min-height: 20px;
+  align-items: center;
+  grid-column: span 2;
+  background-color: inherit;
+  color: inherit;
 }
 
 .copyright {
@@ -227,5 +233,17 @@ a:visited {
   width: 30%;
   background-color: inherit;
   cursor: pointer;
-
+}
+.btns{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+.hidden{
+  display: none;
+}
+.btn{
+  background-color: var(--color-dark--2);
+  border-radius: 5px;
 }

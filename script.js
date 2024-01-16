@@ -7,6 +7,7 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
+const globalBtns = document.querySelector('.btns');
 
 class Workout {
   date = new Date();
@@ -246,6 +247,7 @@ class App {
     </div>
     </li> `;
     form.insertAdjacentHTML('afterend', html);
+    this._showBtns();
   }
   _moveToPopup(e) {
     const workoutEl = e.target.closest('.btn--show-view');
@@ -429,6 +431,10 @@ class App {
       this._getLocalStorage();
       location.reload();
     });
+  }
+  _showBtns() {
+    if (this.#workouts.length >= 2) globalBtns.classList.remove('hidden');
+    if (this.#workouts.length < 2) globalBtns.classList.add('hidden');
   }
 }
 const app = new App();
