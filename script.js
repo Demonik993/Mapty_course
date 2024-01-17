@@ -536,8 +536,29 @@ class App {
   }
   _showAllWorkouts(e) {
     e.preventDefault();
-    if (!e.target.closest('.center-map')) return;
-    console.log(e.target);
+    const lats = this.#workouts.slice().map(w => w.coords[0]);
+    const lngs = this.#workouts.slice().map(w => w.coords[1]);
+    const maxLat = Math.max(...lats);
+    const minLat = Math.min(...lats);
+    const maxLng = Math.max(...lngs);
+    const minLng = Math.min(...lngs);
+    console.log(lats);
+    console.log(maxLat, minLng, maxLng, minLng);
+
+    // e.preventDefault();
+    // if (!e.target.closest('.center-map')) return;
+    // // Uzyskaj tablicę współrzędnych markerów na mapie
+    // const lats =
+
+    // // // Ustaw rozmiar mapy, aby obejmować wszystkie markery
+    // this.#map.fitBounds([minLat, minLng], [maxLat, maxLng]);
+    this.#map.fitBounds(
+      [
+        [minLat, minLng],
+        [maxLat, maxLng],
+      ],
+      { padding: [50, 50] }
+    );
   }
 }
 const app = new App();
