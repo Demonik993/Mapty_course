@@ -75,6 +75,7 @@ class App {
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     containerWorkouts.addEventListener('click', this._deletWorkout.bind(this));
     containerWorkouts.addEventListener('click', this._editWorkout.bind(this));
+    globalBtns.addEventListener('click', this._deleteAllWorkouts.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation)
@@ -435,6 +436,26 @@ class App {
   _showBtns() {
     if (this.#workouts.length >= 2) globalBtns.classList.remove('hidden');
     if (this.#workouts.length < 2) globalBtns.classList.add('hidden');
+  }
+  _deleteAllWorkouts(e) {
+    e.preventDefault();
+    //usuwanie listy
+    const deletAll = e.target.closest('.delete-all');
+    let allWorkouts = containerWorkouts.querySelectorAll('.workout');
+    if (!deletAll || !allWorkouts.length) return;
+    const deleteListEl = function () {
+      if (allWorkouts.length === 1) clearInterval(removeWorkout);
+      containerWorkouts.querySelector('.workout').remove();
+      allWorkouts = containerWorkouts.querySelectorAll('.workout');
+      console.log(allWorkouts);
+    };
+    const removeWorkout = setInterval(deleteListEl, 200);
+    //wyczyszczenie pamięci
+    //   setTimeout(() => {
+    //     this.#workouts = [];
+    //     this._setLocalStorage();
+    //     location.reload();
+    //   }, allWorkouts.length * 200);
   }
 }
 const app = new App();
