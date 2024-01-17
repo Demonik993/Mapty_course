@@ -272,6 +272,28 @@ class App {
     const data = JSON.parse(localStorage.getItem('workouts'));
 
     if (!data) return;
+    data.forEach(el => {
+      if (el.type === 'running') {
+        const workout = new Running(
+          el.distance,
+          el.coords,
+          el.duration,
+          el.cadence
+        );
+        workout.date = el.date;
+        workout.id = el.id;
+      }
+      if (el.type === 'cycling') {
+        const workout = new Running(
+          el.distance,
+          el.coords,
+          el.duration,
+          el.elevationGain
+        );
+        workout.date = el.date;
+        workout.id = el.id;
+      }
+    });
 
     this.#workouts = data;
     this.#workouts.forEach(w => {
@@ -536,22 +558,14 @@ class App {
   }
   _showAllWorkouts(e) {
     e.preventDefault();
+    if (!e.target.closest('.center-map')) return;
     const lats = this.#workouts.slice().map(w => w.coords[0]);
     const lngs = this.#workouts.slice().map(w => w.coords[1]);
     const maxLat = Math.max(...lats);
     const minLat = Math.min(...lats);
     const maxLng = Math.max(...lngs);
     const minLng = Math.min(...lngs);
-    console.log(lats);
-    console.log(maxLat, minLng, maxLng, minLng);
 
-    // e.preventDefault();
-    // if (!e.target.closest('.center-map')) return;
-    // // Uzyskaj tablicę współrzędnych markerów na mapie
-    // const lats =
-
-    // // // Ustaw rozmiar mapy, aby obejmować wszystkie markery
-    // this.#map.fitBounds([minLat, minLng], [maxLat, maxLng]);
     this.#map.fitBounds(
       [
         [minLat, minLng],
