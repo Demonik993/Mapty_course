@@ -62,6 +62,7 @@ class App {
   #map;
   #mapEvent;
   #workouts = [];
+  #sortedWorkouts = [];
   constructor() {
     //API geolocation // get Position
     this._getPosition();
@@ -76,6 +77,8 @@ class App {
     containerWorkouts.addEventListener('click', this._deletWorkout.bind(this));
     containerWorkouts.addEventListener('click', this._editWorkout.bind(this));
     globalBtns.addEventListener('click', this._deleteAllWorkouts.bind(this));
+    globalBtns.addEventListener('click', this._sortWorkouts.bind(this));
+    globalBtns.addEventListener('click', this._showAllWorkouts.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation)
@@ -487,6 +490,54 @@ class App {
         }
       }
     }
+  }
+  _sortWorkouts(e) {
+    e.preventDefault();
+    // console.log(this.#workouts);
+    if (!e.target.closest('.sort-workouts')) return;
+    //version with no way back of sorted
+    /* if (cotainerWorkouts.classList.contains('sorted')) {
+      this.#workouts.reverse();
+    } else {
+      this.#workouts.sort((a, b) => (a.distance > b.distance ? -1 : 1));
+      console.log(this.#workouts);
+      containerWorkouts.classList.add('sorted');
+    }
+    this._setLocalStorage();
+    containerWorkouts.querySelectorAll('.workout').forEach(el => el.remove());
+    this._getLocalStorage();*/
+    if (containerWorkouts.classList.contains('sorted')) {
+      if (containerWorkouts.classList.contains('small-big')) {
+        this._cleareContainer();
+        this._getLocalStorage();
+        this.#sortedWorkouts = [];
+        containerWorkouts.classList.remove('sorted', 'small-big');
+      } else {
+        this._cleareContainer();
+        this.#sortedWorkouts
+          .reverse()
+          .forEach(workout => this._renderWorkout(workout));
+        containerWorkouts.classList.add('small-big');
+      }
+    } else {
+      const allWorkouts = containerWorkouts.querySelectorAll('.workout');
+      allWorkouts.forEach(el => {
+        const workout = this.#workouts.find(w => w.id === el.dataset.id);
+        this.#sortedWorkouts.push(workout);
+        this.#sortedWorkouts.sort((a, b) => (a.distance > b.distance ? 1 : -1));
+        this._cleareContainer();
+        this.#sortedWorkouts.forEach(workout => this._renderWorkout(workout));
+        containerWorkouts.classList.add('sorted');
+      });
+    }
+  }
+  _cleareContainer() {
+    containerWorkouts.querySelectorAll('.workout').forEach(el => el.remove());
+  }
+  _showAllWorkouts(e) {
+    e.preventDefault();
+    if (!e.target.closest('.center-map')) return;
+    console.log(e.target);
   }
 }
 const app = new App();
