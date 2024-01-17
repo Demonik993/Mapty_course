@@ -252,8 +252,6 @@ class App {
   }
   _moveToPopup(e) {
     const workoutEl = e.target.closest('.btn--show-view');
-    console.log(workoutEl);
-
     if (!workoutEl) return;
     const workout = this.#workouts.find(
       w => w.id === workoutEl.closest('.workout').dataset.id
@@ -269,7 +267,7 @@ class App {
   }
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
-    console.log(data);
+
     if (!data) return;
 
     this.#workouts = data;
@@ -290,13 +288,12 @@ class App {
     const workout = this.#workouts.find(
       w => w.id === workoutEl.closest('.workout').dataset.id
     );
-    this.#map.removeLayer(L.marker(workout.coords).addTo(this.#map));
+    this._removeMarker(workout);
     this.#workouts = this.#workouts.filter(
       w => w.id !== workoutEl.closest('.workout').dataset.id
     );
     this._setLocalStorage();
     workoutEl.closest('.workout').remove();
-    location.reload();
   }
   _editWorkout(e) {
     const workoutEl = e.target.closest('.btn--edit-workout');
@@ -437,25 +434,59 @@ class App {
     if (this.#workouts.length >= 2) globalBtns.classList.remove('hidden');
     if (this.#workouts.length < 2) globalBtns.classList.add('hidden');
   }
+
   _deleteAllWorkouts(e) {
     e.preventDefault();
     //usuwanie listy
     const deletAll = e.target.closest('.delete-all');
     let allWorkouts = containerWorkouts.querySelectorAll('.workout');
     if (!deletAll || !allWorkouts.length) return;
+    if (!confirm("Do you want to delete all workouts? You won't take it back!"))
+      return;
     const deleteListEl = function () {
       if (allWorkouts.length === 1) clearInterval(removeWorkout);
-      containerWorkouts.querySelector('.workout').remove();
+      const el = containerWorkouts.querySelector('.workout');
+      const workout = this.#workouts.find(w => w.id === el.dataset.id);
+
+      el.remove();
+      this._removeMarker(workout);
+      this.#workouts = this.#workouts.filter(w => w !== workout);
+      this._setLocalStorage();
+      this._showBtns();
       allWorkouts = containerWorkouts.querySelectorAll('.workout');
-      console.log(allWorkouts);
     };
-    const removeWorkout = setInterval(deleteListEl, 200);
-    //wyczyszczenie pamięci
-    //   setTimeout(() => {
-    //     this.#workouts = [];
-    //     this._setLocalStorage();
-    //     location.reload();
-    //   }, allWorkouts.length * 200);
+    const removeWorkout = setInterval(deleteListEl.bind(this), 200);
+    //SIMPLE VERSION
+    // const deleteListEl = function () {
+    //   if (allWorkouts.length === 1) clearInterval(removeWorkout);
+    //   containerWorkouts.querySelector('.workout').remove();
+    //   allWorkouts = containerWorkouts.querySelectorAll('.workout');
+    // };
+    // const removeWorkout = setInterval(deleteListEl, 200);
+    // //wyczyszczenie pamięci
+    // //   setTimeout(() => {
+    // //     this.#workouts = [];
+    // //     this._setLocalStorage();
+    // //     location.reload();
+    // //   }, allWorkouts.length * 200);
+  }
+  _removeMarker(w) {
+    // Pobranie wszystkich markerów z mapy
+    let allMarkers = this.#map._layers;
+    // Przeszukiwanie wszystkich warstw (markerów) w poszukiwaniu tego, który ma odpowiednie współrzędne
+    for (let markerId in allMarkers) {
+      if (allMarkers.hasOwnProperty(markerId)) {
+        let currentMarker = allMarkers[markerId];
+        if (
+          currentMarker instanceof L.Marker &&
+          currentMarker.getLatLng().equals(L.latLng(w.coords))
+        ) {
+          // Znaleziono marker o podanych współrzędnych, usuwanie go
+          this.#map.removeLayer(currentMarker);
+          break; // Przerywamy pętlę po znalezieniu markera
+        }
+      }
+    }
   }
 }
 const app = new App();
