@@ -240,10 +240,54 @@ a:visited {
   gap: 20px;
   margin-bottom: 10px;
 }
-.hidden{
-  display: none;
-}
+
 .btn{
   background-color: var(--color-dark--2);
   border-radius: 5px;
+}
+.error--container {
+  color: black;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  z-index: 1000;
+  width: 100dvw;
+  height: 100dvh;
+}
+.error--box {
+  position: fixed;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  min-width: 40%;
+  height: 200px;
+  background-color: var(--color-dark--1);
+  align-content: space-around;
+  justify-content: space-around;
+  border: solid 5px var(--color-dark--2);
+  font-size: x-large;
+  color: var(--color-light--2);
+  border-radius: 10px;
+  grid-template-rows: repeat(4, 1fr);
+  padding: 0 2% 0 2%;
+}
+.message {
+  flex-wrap: wrap;
+  grid-column: span 4;
+  justify-self: center;
+  grid-row: 2;
+}
+.btns-error{
+  grid-template-columns: repeat(2, 1fr);
+    grid-column: span 4;
+    grid-row: 3;
+}
+.ok, .reject{
+  color: inherit;
+}
+.hidden{
+  display: none;
 }

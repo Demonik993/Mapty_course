@@ -8,6 +8,7 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 const globalBtns = document.querySelector('.btns');
+const errorMessage = document.querySelector('.error--container');
 
 class Workout {
   date = new Date();
@@ -148,7 +149,7 @@ class App {
         !isValid(distance, duration, cadence) ||
         !allPositive(distance, duration, cadence)
       )
-        return alert('Enter the positive number!');
+        return this._showAlert(type);
       //if workout is running create running obj.
       workout = new Running(distance, [lat, lng], duration, cadence);
     }
@@ -160,7 +161,7 @@ class App {
         !isValid(distance, duration, elevation) ||
         !allPositive(distance, duration)
       )
-        return alert('Enter the positive number!');
+        return this._showAlert();
       workout = new Cycling(distance, [lat, lng], duration, elevation);
     }
     //add workout to workouts array
@@ -305,11 +306,19 @@ class App {
     localStorage.removeItem('workouts');
     location.reload(); // to reload the page from console
   }
-  _deletWorkout(e) {
+  async _deletWorkout(e) {
     const workoutEl = e.target.closest('.btn--delete-workout');
     if (!workoutEl) return;
-    const confirmDelete = confirm('Do you really want to remove this workout');
-    if (!confirmDelete) return;
+    const confirmed = await this._showError(
+      'Czy na pewno chcesz usunąć trening?'
+    );
+
+    // Check if the user confirmed
+    if (!confirmed) {
+      console.log('Anulowano usunięcie treningu');
+      return;
+    }
+
     const workout = this.#workouts.find(
       w => w.id === workoutEl.closest('.workout').dataset.id
     );
@@ -460,14 +469,19 @@ class App {
     if (this.#workouts.length < 2) globalBtns.classList.add('hidden');
   }
 
-  _deleteAllWorkouts(e) {
+  async _deleteAllWorkouts(e) {
     e.preventDefault();
     //usuwanie listy
     const deletAll = e.target.closest('.delete-all');
     let allWorkouts = containerWorkouts.querySelectorAll('.workout');
     if (!deletAll || !allWorkouts.length) return;
-    if (!confirm("Do you want to delete all workouts? You won't take it back!"))
-      return;
+
+    const confirmed = await this._showError(
+      'Czy na pewno chcesz usunąć wszystkie treningi?'
+    );
+
+    // Check if the user confirmed
+    if (!confirmed) return;
     const deleteListEl = function () {
       if (allWorkouts.length === 1) clearInterval(removeWorkout);
       const el = containerWorkouts.querySelector('.workout');
@@ -573,6 +587,53 @@ class App {
       ],
       { padding: [50, 50] }
     );
+  }
+  _showAlert(type) {
+    errorMessage.classList.remove('hidden');
+    errorMessage.querySelector('.message').textContent =
+      type === 'running'
+        ? `Wszystkie wartości powinny być dodatnimi liczbami`
+        : `"Elev gain" powinna być liczą, a pozostałe 
+        wartości powinny być dodatnimi liczbami`;
+
+    errorMessage.querySelector('.btn').focus();
+    errorMessage.querySelectorAll('.btn').forEach(el =>
+      el.addEventListener('click', function () {
+        errorMessage.classList.add('hidden');
+        form.querySelector('.form__input--distance').focus();
+      })
+    );
+  }
+  async _showError(message) {
+    const errorBox = errorMessage.querySelector('.error--box');
+    const messageElement = errorBox.querySelector('.message');
+    const okBtn = errorBox.querySelector('.btn.ok');
+    const rejectBtn = errorBox.querySelector('.btn.reject');
+
+    // Set the error message
+    messageElement.textContent = message;
+
+    // Display the error container
+    errorMessage.classList.remove('hidden');
+
+    // Create a promise to handle the confirmation
+    return new Promise(resolve => {
+      // Event listener for the OK button
+      okBtn.addEventListener('click', () => {
+        // Hide the error container
+        errorMessage.classList.add('hidden');
+        // Resolve the promise with true
+        resolve(true);
+      });
+
+      // Event listener for the Reject button
+      rejectBtn.addEventListener('click', () => {
+        // Hide the error container
+        errorMessage.classList.add('hidden');
+        // Resolve the promise with false
+        resolve(false);
+      });
+    });
   }
 }
 const app = new App();
