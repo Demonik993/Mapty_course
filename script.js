@@ -64,6 +64,7 @@ class App {
   #mapEvent;
   #workouts = [];
   #sortedWorkouts = [];
+  #markers = [];
   constructor() {
     //API geolocation // get Position
     this._getPosition();
@@ -184,7 +185,7 @@ class App {
     this._setLocalStorage();
   }
   _renderWorkoutMarker(workout) {
-    L.marker(workout.coords)
+    const marker = L.marker(workout.coords)
       .addTo(this.#map)
       .bindPopup(
         L.popup({
@@ -199,6 +200,7 @@ class App {
         `${workout.type === 'running' ? '🏃‍♂️' : '🚴‍♀️'} ${workout.description}`
       )
       .openPopup();
+    this.#markers.push([workout.id, marker]);
   }
   _renderWorkout(workout) {
     let html = `
@@ -514,15 +516,24 @@ class App {
     // //   }, allWorkouts.length * 200);
   }
   _removeMarker(w) {
+    console.log(this.#markers);
+
+    // this.#markers.forEach(
+    //   el =>
+    //     function () {
+    //       if (el[0] === w.id) {
+    //         console.log(el[1]);
+    //         el[1].;
+    //       }
+    //     }
+    // );
     // Pobranie wszystkich markerów z mapy
     let allMarkers = this.#map._layers;
     console.log(allMarkers);
-
     // Przeszukiwanie wszystkich warstw (markerów) w poszukiwaniu tego, który ma odpowiednie współrzędne
     for (let markerId in allMarkers) {
       if (allMarkers.hasOwnProperty(markerId)) {
         let currentMarker = allMarkers[markerId];
-
         if (
           currentMarker instanceof L.Marker &&
           currentMarker.getLatLng().equals(L.latLng(w.coords))
@@ -642,9 +653,6 @@ class App {
       });
     });
   }
-  _showMapLayers() {
-    const allMarkers = this.#map;
-    Object.entries(allMarkers).forEach(el => console.log(el));
-  }
+  _showMapLayers() {}
 }
 const app = new App();
