@@ -70,6 +70,7 @@ class App {
 
     //get locale storage
     this._getLocalStorage();
+    // this._showMapLayers();
 
     //add event handlers
     form.addEventListener('submit', this._newWorkout.bind(this)); //add bind(this) to use class vars
@@ -80,6 +81,9 @@ class App {
     globalBtns.addEventListener('click', this._deleteAllWorkouts.bind(this));
     globalBtns.addEventListener('click', this._sortWorkouts.bind(this));
     globalBtns.addEventListener('click', this._showAllWorkouts.bind(this));
+    document
+      .querySelector('.logo')
+      .addEventListener('click', this._showMapLayers.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation)
@@ -512,10 +516,13 @@ class App {
   _removeMarker(w) {
     // Pobranie wszystkich markerów z mapy
     let allMarkers = this.#map._layers;
+    console.log(allMarkers);
+
     // Przeszukiwanie wszystkich warstw (markerów) w poszukiwaniu tego, który ma odpowiednie współrzędne
     for (let markerId in allMarkers) {
       if (allMarkers.hasOwnProperty(markerId)) {
         let currentMarker = allMarkers[markerId];
+
         if (
           currentMarker instanceof L.Marker &&
           currentMarker.getLatLng().equals(L.latLng(w.coords))
@@ -635,6 +642,9 @@ class App {
       });
     });
   }
+  _showMapLayers() {
+    const allMarkers = this.#map;
+    Object.entries(allMarkers).forEach(el => console.log(el));
+  }
 }
 const app = new App();
-// app._getPosition();
